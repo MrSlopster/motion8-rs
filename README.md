@@ -2,11 +2,9 @@
 
 DSU (Cemuhook) motion server for Linux that reads gyro/accel over SDL 3.
 
-8BitDo controllers only expose their gyro through SDL's hidapi drivers (not
-evdev), so [evdevhook2](https://github.com/v1993/evdevhook2) can't see it. This
-speaks [protocol v1001](https://v1993.github.io/cemuhook-protocol/) instead,
-with the same result: Ryujinx, Cemu, Dolphin, Citra, RPCS3 etc. treat it as a
-"CemuHook compatible motion (DSU)" source.
+8BitDo controllers only expose their gyro through SDL's hidapi drivers (not evdev), so [evdevhook2](https://github.com/v1993/evdevhook2) can't see it. 
+This speaks [protocol v1001](https://v1993.github.io/cemuhook-protocol/) instead with the same result: Ryujinx, Cemu, Dolphin, Citra, RPCS3 etc.
+Treat it as a CemuHook compatible motion source.
 
 ## Requirements
 
