@@ -61,8 +61,10 @@ pub(crate) fn convert_motion(
 ) -> MotionSample {
     const GRAVITY: f32 = sdl3::sys::sensor::SDL_STANDARD_GRAVITY as f32;
     const RAD_TO_DEG: f32 = std::f32::consts::PI / 180.0;
-    // Sign/calibration knobs; flip if motion is mirrored in-game.
-    const GYRO_SIGN: [f32; 3] = [1.0, 1.0, 1.0];
+    // Sign calibration (empirical against Ryujinx with an Ultimate 2):
+    // SDL's yaw is counter-clockwise positive; DSU clients expect it
+    // inverted. Pitch and roll pass through unchanged.
+    const GYRO_SIGN: [f32; 3] = [1.0, -1.0, 1.0];
     const ACCEL_SIGN: [f32; 3] = [1.0, 1.0, 1.0];
     MotionSample {
         accel: [
@@ -217,15 +219,19 @@ mod tests {
 
     #[test]
     fn motion_unit_conversion() {
-        // 90°/s about pitch, 1g downward on Y
+        // 90°/s about each gyro axis, 1g on Y.
+        // Yaw must be NEGATED: Ryujinx's DSU client expects inverted yaw
+        // relative to SDL's counter-clockwise-positive convention
+        // (calibrated empirically against Ryujinx, 2026-10-08).
+        let g = sdl3::sys::sensor::SDL_STANDARD_GRAVITY as f32;
         let s = convert_motion(
-            [0.0, sdl3::sys::sensor::SDL_STANDARD_GRAVITY as f32, 0.0],
-            [std::f32::consts::PI / 2.0, 0.0, -std::f32::consts::PI / 2.0],
+            [0.0, g, 0.0],
+            [std::f32::consts::PI / 2.0, std::f32::consts::PI / 2.0, -std::f32::consts::PI / 2.0],
             777,
         );
         assert!((s.gyro[0] - 90.0).abs() < 1e-4, "rad/s → deg/s, pitch");
-        assert!((s.gyro[1]).abs() < 1e-6);
-        assert!((s.gyro[2] + 90.0).abs() < 1e-4, "roll");
+        assert!((s.gyro[1] + 90.0).abs() < 1e-4, "yaw is sign-inverted");
+        assert!((s.gyro[2] + 90.0).abs() < 1e-4, "roll passthrough");
         assert!((s.accel[1] - 1.0).abs() < 1e-4, "m/s² → g");
         assert_eq!(s.accel[0], 0.0);
         assert_eq!(s.timestamp_us, 777);
