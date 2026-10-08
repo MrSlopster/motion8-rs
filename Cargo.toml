@@ -8,7 +8,7 @@ clap = { version = "4.6.7", features = ["derive"] }
 crc32fast = "1.5.2"
 env_logger = "0.11.11"
 log = "0.4.34"
-sdl3 = "0.20.0"
+sdl3 = { version = "0.20.0", features = ["hidapi"] }
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.7"
 [[bin]]
