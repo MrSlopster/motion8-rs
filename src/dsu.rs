@@ -228,7 +228,7 @@ pub fn parse_request(packet: &[u8]) -> Result<Request, ParseError> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     const SID: u32 = 0xdeadbeef;
@@ -397,6 +397,11 @@ mod tests {
         assert_eq!(&p[20..24], &[0, 2, 2, 1]); // slot, state, model, connection
         assert_eq!(&p[24..30], &[9, 8, 7, 6, 5, 4]);
         assert_eq!(p[30], 0x04, "battery");
+    }
+
+    /// Helper used by server integration tests.
+    pub(crate) fn public_crc(data: &[u8]) -> u32 {
+        crc32(data)
     }
 
     #[test]
