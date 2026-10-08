@@ -7,8 +7,8 @@ use std::net::{SocketAddr, UdpSocket};
 use std::time::{Duration, Instant};
 
 use crate::dsu::{
-    self, build_data_packet, build_info_packet, build_version_packet, parse_request, MotionSample,
-    Request, SharedBegin,
+    self, build_data_packet, build_info_packet, build_version_packet, parse_request, Request,
+    SharedBegin,
 };
 use crate::source::{ControllerSnapshot, MotionSource};
 

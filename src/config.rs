@@ -60,10 +60,12 @@ impl Config {
         }
     }
 
-    /// True if a gamepad named `name` passes the device filter.
-    pub fn allows(&self, name: &str) -> bool {
-        self.device_filter.is_empty() || self.device_filter.iter().any(|f| name.contains(f))
-    }
+}
+
+/// Shared filter semantics: empty filter allows everything; otherwise
+/// case-sensitive substring match.
+pub fn filter_allows(filter: &[String], name: &str) -> bool {
+    filter.is_empty() || filter.iter().any(|f| name.contains(f))
 }
 
 /// Default config file search order: `$XDG_CONFIG_HOME/8bitdo-motion/config.toml`,
@@ -122,10 +124,10 @@ mod tests {
     #[test]
     fn device_filter_semantics() {
         let mut c = Config::default();
-        assert!(c.allows("8BitDo Ultimate 2 Wireless"), "empty filter allows all");
+        assert!(filter_allows(&c.device_filter, "8BitDo Ultimate 2 Wireless"), "empty filter allows all");
         c.device_filter = vec!["Ultimate".into()];
-        assert!(c.allows("8BitDo Ultimate 2 Wireless"));
-        assert!(!c.allows("Sony DualSense"));
-        assert!(!c.allows("ultimate"), "substring match is case-sensitive by design");
+        assert!(filter_allows(&c.device_filter, "8BitDo Ultimate 2 Wireless"));
+        assert!(!filter_allows(&c.device_filter, "Sony DualSense"));
+        assert!(!filter_allows(&c.device_filter, "ultimate"), "substring match is case-sensitive by design");
     }
 }

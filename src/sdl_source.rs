@@ -10,9 +10,7 @@ use sdl3::joystick::{ConnectionState, JoystickId, PowerLevel};
 use sdl3::sensor::SensorType;
 
 use crate::config::Config;
-use crate::dsu::{
-    CONN_BLUETOOTH, CONN_USB, MotionSample, MODEL_FULL_GYRO, PROTOCOL_VERSION,
-};
+use crate::dsu::{CONN_BLUETOOTH, CONN_USB, MotionSample};
 use crate::source::{ControllerSnapshot, MotionSource};
 
 /// DSU battery encoding, from SDL power info.
@@ -89,6 +87,8 @@ struct OpenPad {
 
 pub struct SdlSource {
     gamepad: sdl3::GamepadSubsystem,
+    /// Pumped each poll; SDL maintains sensor readings via the event loop.
+    events: sdl3::EventPump,
     /// JoystickId → opened pad (sensors enabled).
     open: HashMap<JoystickId, OpenPad>,
     /// Enumeration order defines slot assignment.
@@ -99,9 +99,10 @@ pub struct SdlSource {
 
 impl SdlSource {
     /// SDL must already be initialized with the gamepad subsystem.
-    pub fn new(gamepad: sdl3::GamepadSubsystem, config: &Config) -> Self {
+    pub fn new(gamepad: sdl3::GamepadSubsystem, events: sdl3::EventPump, config: &Config) -> Self {
         Self {
             gamepad,
+            events,
             open: HashMap::new(),
             order: Vec::new(),
             filter: config.device_filter.clone(),
@@ -110,12 +111,13 @@ impl SdlSource {
     }
 
     fn passes_filter(&self, name: &str) -> bool {
-        self.filter.is_empty() || self.filter.iter().any(|f| name.contains(f))
+        crate::config::filter_allows(&self.filter, name)
     }
 }
 
 impl MotionSource for SdlSource {
     fn poll(&mut self) {
+        self.events.pump_events();
         let ids = match self.gamepad.gamepads() {
             Ok(ids) => ids,
             Err(_) => return,
@@ -195,7 +197,7 @@ impl MotionSource for SdlSource {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dsu::SLOT_STATE_CONNECTED;
+    use crate::dsu::{MODEL_FULL_GYRO, PROTOCOL_VERSION, SLOT_STATE_CONNECTED};
 
     #[test]
     fn mac_is_stable_and_six_bytes() {
