@@ -1,0 +1,16 @@
+# Example configuration for 8bitdo-motion.
+# Copy to $XDG_CONFIG_HOME/8bitdo-motion/config.toml or ./8bitdo-motion.toml.
+
+## UDP port to listen on (Cemuhook default is 26760).
+port = 26760
+
+## Address to bind. Use "0.0.0.0" to serve emulators on other machines
+## on your LAN; default only accepts local connections.
+bind = "127.0.0.1"
+
+## Rate at which data packets are streamed to emulators, in Hz.
+send_rate_hz = 100
+
+## Only expose gamepads whose name contains one of these substrings.
+## Comment out or leave empty to expose every gyro-capable gamepad.
+# device_filter = ["Ultimate"]
