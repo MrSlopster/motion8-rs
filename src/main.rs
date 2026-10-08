@@ -1,0 +1,2 @@
+mod dsu;
+fn main() {}
